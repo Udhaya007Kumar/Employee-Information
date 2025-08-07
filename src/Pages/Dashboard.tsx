@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 import DepartmentPieChart from '../Components/Charts/DepartmentPieChart';
 import SalaryHistogram from '../Components/Charts/SalaryHistogram';

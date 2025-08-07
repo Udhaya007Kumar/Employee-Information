@@ -13,7 +13,7 @@ const EmployeeList: React.FC = () => {
   const currentEmployees = employees.slice(startIdx, startIdx + ITEMS_PER_PAGE);
   
   // Page change handler
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  // const handlePageChange = (page: number) => setCurrentPage(page);
 
   return (
     <div className="p-8">

@@ -33,7 +33,7 @@ const DepartmentPieChart: React.FC = () => {
           label
           dataKey="value"
         >
-          {departmentData.map((entry, index) => (
+          {departmentData.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
