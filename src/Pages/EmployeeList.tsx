@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../Store/hooks';
-import { deleteEmployee} from '../Features/EmployeeSlice';
+import { deleteEmployee } from '../Features/EmployeeSlice'; // removed updateEmployee
 import Pagination from '../Components/Pagination';
 import EmployeeFilter from '../Components/EmployeeFilter';
 import SortControl from '../Components/SortControl';
@@ -78,11 +78,6 @@ const EmployeeList: React.FC = () => {
   const handleEditClick = (emp: Employee) => {
     setEditingEmployee(emp);
   };
-
-  // const handleUpdate = (updatedEmp: Employee) => {
-  //   dispatch(updateEmployee(updatedEmp));
-  //   setEditingEmployee(null);
-  // };
 
   const handleDelete = (id: string) => {
     const confirm = window.confirm("Are you sure you want to delete this employee?");
@@ -190,10 +185,10 @@ const EmployeeList: React.FC = () => {
 
       {editingEmployee && (
         <EmployeeEditModal
-  isOpen={editingEmployee !== null}
-  employee={editingEmployee}
-  onClose={() => setEditingEmployee(null)}
-/>
+          isOpen={editingEmployee !== null}
+          employee={editingEmployee}
+          onClose={() => setEditingEmployee(null)}
+        />
       )}
     </div>
   );
