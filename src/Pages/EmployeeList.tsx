@@ -79,10 +79,10 @@ const EmployeeList: React.FC = () => {
     setEditingEmployee(emp);
   };
 
-  const handleUpdate = (updatedEmp: Employee) => {
-    dispatch(updateEmployee(updatedEmp));
-    setEditingEmployee(null);
-  };
+  // const handleUpdate = (updatedEmp: Employee) => {
+  //   dispatch(updateEmployee(updatedEmp));
+  //   setEditingEmployee(null);
+  // };
 
   const handleDelete = (id: string) => {
     const confirm = window.confirm("Are you sure you want to delete this employee?");

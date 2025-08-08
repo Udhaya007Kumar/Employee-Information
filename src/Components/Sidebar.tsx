@@ -1,5 +1,5 @@
 
-import { Home, Users, PlusCircle, BarChart3 } from "lucide-react";
+import { Home, Users, PlusCircle } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 
