@@ -20,11 +20,11 @@ const navItems = [
     icon: <PlusCircle size={18} />,
     path: "/add-employee",
   },
-  {
-    label: "Reports",
-    icon: <BarChart3 size={18} />,
-    path: "/reports",
-  },
+  // {
+  //   label: "Reports",
+  //   icon: <BarChart3 size={18} />,
+  //   path: "/reports",
+  // },
 ];
 
 const Sidebar = () => {
