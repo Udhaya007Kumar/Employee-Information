@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../Store/hooks';
-import { deleteEmployee, updateEmployee } from '../Features/EmployeeSlice';
+import { deleteEmployee } from '../Features/EmployeeSlice';
 import Pagination from '../Components/Pagination';
 import EmployeeFilter from '../Components/EmployeeFilter';
 import SortControl from '../Components/SortControl';
