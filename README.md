@@ -1,69 +1,37 @@
-# React + TypeScript + Vite
+# Employee Information Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive and interactive dashboard to manage employee records, built with **React**, **TypeScript**, and **Vite**.  
+Includes advanced filtering, sorting, visualizations, and smooth user experience enhancements.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🔍 Data Viewing & Management
+- **Filtering by Department & Experience Level**
+- **Sorting by Salary, Experience, and Name**
+- **Search Functionality** (by name or role)
+- **Add/Edit Employee** using a modal or form with validation
+- **Working Filter & Sort System** with live updates
+- **State Management for User Interactions** using Redux Toolkit
 
-## Expanding the ESLint configuration
+### ⚡ Advanced Features
+- **Advanced Filtering** with multiple criteria combinations
+- **Pagination** for large datasets *(or virtual scrolling for performance)*
+- **Optimistic Updates** for smoother user experience
+- **Error Handling & Loading States**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 📊 Data Visualization
+- **Employee Distribution by Department** – Pie Chart
+- **Salary Distribution** – Histogram
+- **Department-wise Average Salary** – Bar Chart
+- **Dashboard Overview** with key HR metrics
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠 Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **React** – Frontend library
+- **TypeScript** – Static typing
+- **Vite** – Fast build tool
+- **Redux Toolkit** – State management
+- **Tailwind CSS** – Styling
+- **React Router** – Navigation
+- **Chart.js / Recharts** – Data visualization
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
