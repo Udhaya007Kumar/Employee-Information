@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../Store/hooks';
-import { deleteEmployee } from '../Features/EmployeeSlice'; // removed updateEmployee
+import { deleteEmployee } from '../Features/EmployeeSlice';
 import Pagination from '../Components/Pagination';
 import EmployeeFilter from '../Components/EmployeeFilter';
 import SortControl from '../Components/SortControl';
@@ -12,6 +12,7 @@ import type { Employee } from '../Types/Employee';
 const ITEMS_PER_PAGE = 10;
 
 const EmployeeList: React.FC = () => {
+  // 🔹 State for filters, sorting, search, pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [experienceFilter, setExperienceFilter] = useState('');
@@ -23,6 +24,7 @@ const EmployeeList: React.FC = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employee.list);
 
+  // 🔹 Dropdown options for filters and sorting
   const departmentOptions = [...new Set(employees.map(emp => emp.department.name))];
   const experienceBuckets = [
     { label: 'All', value: '' },
@@ -40,20 +42,27 @@ const EmployeeList: React.FC = () => {
     { label: 'Salary (High → Low)', value: 'salary-desc' },
   ];
 
+  // 🔹 Apply filters (department, experience, search by name/email)
   const filteredEmployees = employees.filter(emp => {
     const deptMatch = !departmentFilter || emp.department.name === departmentFilter;
+
+    // Experience filter logic
     let expMatch = true;
     if (experienceFilter === '0-2') expMatch = emp.experienceYears <= 2;
     else if (experienceFilter === '3-5') expMatch = emp.experienceYears >= 3 && emp.experienceYears <= 5;
     else if (experienceFilter === '6-10') expMatch = emp.experienceYears >= 6 && emp.experienceYears <= 10;
     else if (experienceFilter === '10+') expMatch = emp.experienceYears > 10;
 
-    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
-    const nameMatch = fullName.includes(nameSearch.toLowerCase());
+    // Search by full name OR email
+    const query = nameSearch.toLowerCase();
+    const nameEmailMatch =
+      `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query) ||
+      emp.email.toLowerCase().includes(query);
 
-    return deptMatch && expMatch && nameMatch;
+    return deptMatch && expMatch && nameEmailMatch;
   });
 
+  // 🔹 Apply sorting
   const sortedEmployees = [...filteredEmployees];
   if (selectedSort === 'name-asc') {
     sortedEmployees.sort((a, b) => a.firstName.localeCompare(b.firstName));
@@ -67,27 +76,31 @@ const EmployeeList: React.FC = () => {
     sortedEmployees.sort((a, b) => b.salary - a.salary);
   }
 
+  // 🔹 Pagination logic
   const totalPages = Math.ceil(sortedEmployees.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentEmployees = sortedEmployees.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
+  // 🔹 Reset to first page when filters/sorting/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [departmentFilter, experienceFilter, selectedSort, nameSearch]);
 
+  // 🔹 Open edit modal
   const handleEditClick = (emp: Employee) => {
     setEditingEmployee(emp);
   };
 
+  // 🔹 Delete employee
   const handleDelete = (id: string) => {
-    const confirm = window.confirm("Are you sure you want to delete this employee?");
-    if (confirm) {
+    if (window.confirm("Are you sure you want to delete this employee?")) {
       dispatch(deleteEmployee(id));
     }
   };
 
   return (
     <div className="p-8">
+      {/* 🔹 Header + Add button */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Employee List</h1>
         <button
@@ -98,17 +111,20 @@ const EmployeeList: React.FC = () => {
         </button>
       </div>
 
+      {/* 🔹 Filters, Search, Sort */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="flex items-center bg-white shadow-sm px-4 py-2">
+        {/* Search box */}
+        <div className="flex items-center bg-white shadow-sm px-4 py-2 rounded w-full">
           <input
             type="text"
-            placeholder="Search by name"
+            placeholder="Search by name or email"
             value={nameSearch}
             onChange={(e) => setNameSearch(e.target.value)}
             className="w-full text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 p-3 rounded"
           />
         </div>
 
+        {/* Department + Experience filter */}
         <div className="bg-white shadow-sm rounded-lg px-4 py-2">
           <EmployeeFilter
             departmentFilter={departmentFilter}
@@ -120,6 +136,7 @@ const EmployeeList: React.FC = () => {
           />
         </div>
 
+        {/* Sort dropdown */}
         <div className="bg-white shadow-sm rounded-lg px-4 py-2 flex items-center">
           <SortControl
             selectedSort={selectedSort}
@@ -129,6 +146,7 @@ const EmployeeList: React.FC = () => {
         </div>
       </div>
 
+      {/* 🔹 Employee table */}
       <div className="shadow rounded-lg overflow-x-auto bg-white">
         <table className="min-w-full text-left border-collapse">
           <thead className="bg-indigo-50">
@@ -149,7 +167,9 @@ const EmployeeList: React.FC = () => {
               <tr key={emp.id} className="odd:bg-white even:bg-indigo-50 hover:bg-indigo-100 transition">
                 <td className="px-4 sm:px-6 py-2 font-medium">{emp.firstName} {emp.lastName}</td>
                 <td className="px-4 sm:px-6 py-2">{emp.email}</td>
-                <td className="px-4 sm:px-6 py-2">{emp.role.title} <span className="text-xs text-gray-400">({emp.role.level})</span></td>
+                <td className="px-4 sm:px-6 py-2">
+                  {emp.role.title} <span className="text-xs text-gray-400">({emp.role.level})</span>
+                </td>
                 <td className="px-4 sm:px-6 py-2">{emp.department.name}</td>
                 <td className="px-4 sm:px-6 py-2 text-center">{emp.experienceYears} yrs</td>
                 <td className="px-4 sm:px-6 py-2">₹{emp.salary.toLocaleString('en-IN')}</td>
@@ -181,8 +201,10 @@ const EmployeeList: React.FC = () => {
         </table>
       </div>
 
+      {/* 🔹 Pagination */}
       <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage} />
 
+      {/* 🔹 Edit modal */}
       {editingEmployee && (
         <EmployeeEditModal
           isOpen={editingEmployee !== null}

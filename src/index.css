@@ -1,0 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+/* 2. Import Tailwind itself */
+@import "tailwindcss";
+
+/* 3. Define your font under @theme */
+@theme {
+  --font-poppins: "Poppins", sans-serif;
+}
+
+/* 4. Apply it globally */
+body {
+  @apply font-poppins;
+}
