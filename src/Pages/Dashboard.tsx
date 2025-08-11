@@ -1,43 +1,45 @@
+import React, { Suspense } from 'react';
 
+// 🔹 Lazy load charts to reduce initial bundle size
+const DepartmentPieChart = React.lazy(() => import('../Components/Charts/DepartmentPieChart'));
+const SalaryHistogram = React.lazy(() => import('../Components/Charts/SalaryHistogram'));
+const AvgSalaryBarChart = React.lazy(() => import('../Components/Charts/AvgSalaryBarChart'));
+const DashboardSummaryCards = React.lazy(() => import('../Components/Charts/DashboardSummaryCards'));
 
-import DepartmentPieChart from '../Components/Charts/DepartmentPieChart';
-import SalaryHistogram from '../Components/Charts/SalaryHistogram';
-import AvgSalaryBarChart from '../Components/Charts/AvgSalaryBarChart';
-import DashboardSummaryCards from '../Components/Charts/DashboardSummaryCards' 
-
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   return (
     <div className="p-4">
+      {/* Chart Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-
         
-        
-        {/* Salary Distribution */}
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          {/* <h2 className="font-semibold text-gray-800 text-lg mb-4">Salary Distribution</h2> */}
-          <SalaryHistogram />
-        </div>
+        <Suspense fallback={<div className="bg-white p-4 rounded-xl shadow-md">Loading Salary Chart...</div>}>
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <SalaryHistogram />
+          </div>
+        </Suspense>
 
-        {/* Employees by Department */}
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          {/* <h2 className="font-semibold text-gray-800 text-lg mb-4">Employees by Department</h2> */}
-          <DepartmentPieChart />
-        </div>
+        <Suspense fallback={<div className="bg-white p-4 rounded-xl shadow-md">Loading Department Chart...</div>}>
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <DepartmentPieChart />
+          </div>
+        </Suspense>
 
-        {/* Average Salary */}
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          {/* <h2 className="font-semibold text-gray-800 text-lg mb-4">Average Salary by Department</h2> */}
-          <AvgSalaryBarChart />
-        </div>
+        <Suspense fallback={<div className="bg-white p-4 rounded-xl shadow-md">Loading Avg Salary Chart...</div>}>
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <AvgSalaryBarChart />
+          </div>
+        </Suspense>
 
       </div>
 
+      {/* Summary Cards */}
       <div className='p-6'>
-        <DashboardSummaryCards />
-
+        <Suspense fallback={<div>Loading Summary Cards...</div>}>
+          <DashboardSummaryCards />
+        </Suspense>
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default React.memo(Dashboard);

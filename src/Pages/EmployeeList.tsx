@@ -1,18 +1,19 @@
 // src/Pages/EmployeeList.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../Store/hooks';
 import { deleteEmployee } from '../Features/EmployeeSlice';
-import Pagination from '../Components/Pagination';
-import EmployeeFilter from '../Components/EmployeeFilter';
-import SortControl from '../Components/SortControl';
-import EmployeeEditModal from '../Components/EmployeeEditModal';
 import type { Employee } from '../Types/Employee';
+
+// 🔹 Lazy load heavy components
+const Pagination = React.lazy(() => import('../Components/Pagination'));
+const EmployeeFilter = React.lazy(() => import('../Components/EmployeeFilter'));
+const SortControl = React.lazy(() => import('../Components/SortControl'));
+const EmployeeEditModal = React.lazy(() => import('../Components/EmployeeEditModal'));
 
 const ITEMS_PER_PAGE = 10;
 
 const EmployeeList: React.FC = () => {
-  // 🔹 State for filters, sorting, search, pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [experienceFilter, setExperienceFilter] = useState('');
@@ -24,83 +25,97 @@ const EmployeeList: React.FC = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employee.list);
 
-  // 🔹 Dropdown options for filters and sorting
-  const departmentOptions = [...new Set(employees.map(emp => emp.department.name))];
-  const experienceBuckets = [
-    { label: 'All', value: '' },
-    { label: '0-2 yrs', value: '0-2' },
-    { label: '3-5 yrs', value: '3-5' },
-    { label: '6-10 yrs', value: '6-10' },
-    { label: '10+ yrs', value: '10+' },
-  ];
-  const sortOptions = [
-    { label: 'None', value: '' },
-    { label: 'Name (A-Z)', value: 'name-asc' },
-    { label: 'Experience (Low → High)', value: 'exp-asc' },
-    { label: 'Experience (High → Low)', value: 'exp-desc' },
-    { label: 'Salary (Low → High)', value: 'salary-asc' },
-    { label: 'Salary (High → Low)', value: 'salary-desc' },
-  ];
+  // Dropdown options (memoized)
+  const departmentOptions = useMemo(
+    () => [...new Set(employees.map(emp => emp.department.name))],
+    [employees]
+  );
 
-  // 🔹 Apply filters (department, experience, search by name/email)
-  const filteredEmployees = employees.filter(emp => {
-    const deptMatch = !departmentFilter || emp.department.name === departmentFilter;
+  const experienceBuckets = useMemo(
+    () => [
+      { label: 'All', value: '' },
+      { label: '0-2 yrs', value: '0-2' },
+      { label: '3-5 yrs', value: '3-5' },
+      { label: '6-10 yrs', value: '6-10' },
+      { label: '10+ yrs', value: '10+' },
+    ],
+    []
+  );
 
-    // Experience filter logic
-    let expMatch = true;
-    if (experienceFilter === '0-2') expMatch = emp.experienceYears <= 2;
-    else if (experienceFilter === '3-5') expMatch = emp.experienceYears >= 3 && emp.experienceYears <= 5;
-    else if (experienceFilter === '6-10') expMatch = emp.experienceYears >= 6 && emp.experienceYears <= 10;
-    else if (experienceFilter === '10+') expMatch = emp.experienceYears > 10;
+  const sortOptions = useMemo(
+    () => [
+      { label: 'None', value: '' },
+      { label: 'Name (A-Z)', value: 'name-asc' },
+      { label: 'Experience (Low → High)', value: 'exp-asc' },
+      { label: 'Experience (High → Low)', value: 'exp-desc' },
+      { label: 'Salary (Low → High)', value: 'salary-asc' },
+      { label: 'Salary (High → Low)', value: 'salary-desc' },
+    ],
+    []
+  );
 
-    // Search by full name OR email
-    const query = nameSearch.toLowerCase();
-    const nameEmailMatch =
-      `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query) ||
-      emp.email.toLowerCase().includes(query);
+  // Filtering (memoized)
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(emp => {
+      const deptMatch = !departmentFilter || emp.department.name === departmentFilter;
+      let expMatch = true;
+      if (experienceFilter === '0-2') expMatch = emp.experienceYears <= 2;
+      else if (experienceFilter === '3-5') expMatch = emp.experienceYears >= 3 && emp.experienceYears <= 5;
+      else if (experienceFilter === '6-10') expMatch = emp.experienceYears >= 6 && emp.experienceYears <= 10;
+      else if (experienceFilter === '10+') expMatch = emp.experienceYears > 10;
 
-    return deptMatch && expMatch && nameEmailMatch;
-  });
+      const query = nameSearch.toLowerCase();
+      const nameEmailMatch =
+        `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query) ||
+        emp.email.toLowerCase().includes(query);
 
-  // 🔹 Apply sorting
-  const sortedEmployees = [...filteredEmployees];
-  if (selectedSort === 'name-asc') {
-    sortedEmployees.sort((a, b) => a.firstName.localeCompare(b.firstName));
-  } else if (selectedSort === 'exp-asc') {
-    sortedEmployees.sort((a, b) => a.experienceYears - b.experienceYears);
-  } else if (selectedSort === 'exp-desc') {
-    sortedEmployees.sort((a, b) => b.experienceYears - a.experienceYears);
-  } else if (selectedSort === 'salary-asc') {
-    sortedEmployees.sort((a, b) => a.salary - b.salary);
-  } else if (selectedSort === 'salary-desc') {
-    sortedEmployees.sort((a, b) => b.salary - a.salary);
-  }
+      return deptMatch && expMatch && nameEmailMatch;
+    });
+  }, [employees, departmentFilter, experienceFilter, nameSearch]);
 
-  // 🔹 Pagination logic
+  // Sorting (memoized)
+  const sortedEmployees = useMemo(() => {
+    const sorted = [...filteredEmployees];
+    if (selectedSort === 'name-asc') {
+      sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
+    } else if (selectedSort === 'exp-asc') {
+      sorted.sort((a, b) => a.experienceYears - b.experienceYears);
+    } else if (selectedSort === 'exp-desc') {
+      sorted.sort((a, b) => b.experienceYears - a.experienceYears);
+    } else if (selectedSort === 'salary-asc') {
+      sorted.sort((a, b) => a.salary - b.salary);
+    } else if (selectedSort === 'salary-desc') {
+      sorted.sort((a, b) => b.salary - a.salary);
+    }
+    return sorted;
+  }, [filteredEmployees, selectedSort]);
+
+  // Pagination
   const totalPages = Math.ceil(sortedEmployees.length / ITEMS_PER_PAGE);
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentEmployees = sortedEmployees.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  const currentEmployees = useMemo(() => {
+    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedEmployees.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [sortedEmployees, currentPage]);
 
-  // 🔹 Reset to first page when filters/sorting/search change
+  // Reset page on filter/sort/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [departmentFilter, experienceFilter, selectedSort, nameSearch]);
 
-  // 🔹 Open edit modal
-  const handleEditClick = (emp: Employee) => {
+  // Handlers (memoized)
+  const handleEditClick = useCallback((emp: Employee) => {
     setEditingEmployee(emp);
-  };
+  }, []);
 
-  // 🔹 Delete employee
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
       dispatch(deleteEmployee(id));
     }
-  };
+  }, [dispatch]);
 
   return (
     <div className="p-8">
-      {/* 🔹 Header + Add button */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Employee List</h1>
         <button
@@ -111,9 +126,9 @@ const EmployeeList: React.FC = () => {
         </button>
       </div>
 
-      {/* 🔹 Filters, Search, Sort */}
+      {/* Filters/Search/Sort */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Search box */}
+        {/* Search */}
         <div className="flex items-center bg-white shadow-sm px-4 py-2 rounded w-full">
           <input
             type="text"
@@ -124,29 +139,33 @@ const EmployeeList: React.FC = () => {
           />
         </div>
 
-        {/* Department + Experience filter */}
-        <div className="bg-white shadow-sm rounded-lg px-4 py-2">
-          <EmployeeFilter
-            departmentFilter={departmentFilter}
-            setDepartmentFilter={setDepartmentFilter}
-            experienceFilter={experienceFilter}
-            setExperienceFilter={setExperienceFilter}
-            departmentOptions={departmentOptions}
-            experienceBuckets={experienceBuckets}
-          />
-        </div>
+        {/* Filters */}
+        <Suspense fallback={<div>Loading Filters...</div>}>
+          <div className="bg-white shadow-sm rounded-lg px-4 py-2">
+            <EmployeeFilter
+              departmentFilter={departmentFilter}
+              setDepartmentFilter={setDepartmentFilter}
+              experienceFilter={experienceFilter}
+              setExperienceFilter={setExperienceFilter}
+              departmentOptions={departmentOptions}
+              experienceBuckets={experienceBuckets}
+            />
+          </div>
+        </Suspense>
 
-        {/* Sort dropdown */}
-        <div className="bg-white shadow-sm rounded-lg px-4 py-2 flex items-center">
-          <SortControl
-            selectedSort={selectedSort}
-            setSelectedSort={setSelectedSort}
-            sortOptions={sortOptions}
-          />
-        </div>
+        {/* Sort */}
+        <Suspense fallback={<div>Loading Sort...</div>}>
+          <div className="bg-white shadow-sm rounded-lg px-4 py-2 flex items-center">
+            <SortControl
+              selectedSort={selectedSort}
+              setSelectedSort={setSelectedSort}
+              sortOptions={sortOptions}
+            />
+          </div>
+        </Suspense>
       </div>
 
-      {/* 🔹 Employee table */}
+      {/* Table */}
       <div className="shadow rounded-lg overflow-x-auto bg-white">
         <table className="min-w-full text-left border-collapse">
           <thead className="bg-indigo-50">
@@ -201,19 +220,23 @@ const EmployeeList: React.FC = () => {
         </table>
       </div>
 
-      {/* 🔹 Pagination */}
-      <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage} />
+      {/* Pagination */}
+      <Suspense fallback={<div>Loading Pagination...</div>}>
+        <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage} />
+      </Suspense>
 
-      {/* 🔹 Edit modal */}
-      {editingEmployee && (
-        <EmployeeEditModal
-          isOpen={editingEmployee !== null}
-          employee={editingEmployee}
-          onClose={() => setEditingEmployee(null)}
-        />
-      )}
+      {/* Edit Modal */}
+      <Suspense fallback={<div>Loading Editor...</div>}>
+        {editingEmployee && (
+          <EmployeeEditModal
+            isOpen={editingEmployee !== null}
+            employee={editingEmployee}
+            onClose={() => setEditingEmployee(null)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };
 
-export default EmployeeList;
+export default React.memo(EmployeeList);
